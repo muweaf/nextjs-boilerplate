@@ -1,23 +1,2 @@
-/* app/globals.css — Tailwind v3 */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  :root {
-    --radius: 16px;
-  }
-  html, body {
-    @apply bg-slate-50 text-slate-800;
-  }
-}
-
-@layer components {
-  .container { @apply mx-auto max-w-6xl px-4; }
-  .card { @apply rounded-2xl border border-slate-200 bg-white/80 shadow-sm backdrop-blur; }
-  .btn { @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition; }
-  .btn-primary { @apply btn bg-slate-900 text-white hover:bg-slate-700; }
-  .btn-outline { @apply btn bg-white text-slate-900 border border-slate-200 hover:bg-slate-50; }
-  .chip { @apply inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium; }
-  .section-title { @apply mb-4 text-2xl font-semibold; }
-}
+/* Tailwind v4 giriş noktası */
+@import "tailwindcss";

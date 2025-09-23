@@ -12,9 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="tr">
-      <body
-        className={`${inter.variable} font-sans antialiased bg-gradient-to-b from-slate-50 to-white text-slate-800`}
-      >
+      <body className={`${inter.variable} font-sans antialiased bg-gradient-to-b from-slate-50 to-white text-slate-800`}>
         {children}
       </body>
     </html>
