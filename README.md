@@ -1,29 +1,48 @@
 # Kişisel Web Sitesi — Murat Musa Dimlit
 
-Bu proje **Next.js 15** ve **Tailwind CSS** ile hazırlanmış kişisel portfolyo projemdir.  
+Bu repo; **Next.js 15** ve **Tailwind CSS v4** ile hazırlanmış kişisel portfolyo projemi içerir.  
 Vercel üzerinde otomatik olarak deploy edilmektedir.
+
+---
 
 ## Canlı Domain
 
-**Site adresi:** [https://nextjs-boilerplate-muweaf.vercel.app](https://nextjs-boilerplate-muweaf.vercel.app)
+**Site adresi:**  
+[https://nextjs-boilerplate-70xotjhx5-murats-projects-dd84103f.vercel.app](https://nextjs-boilerplate-70xotjhx5-murats-projects-dd84103f.vercel.app)
 
+> Not: Bu bağlantı Vercel’deki **production** dağıtım alan adıdır.
 
-> Not: `YOUR-PROJECT` kısmını kendi Vercel dağıtım alan adınla değiştirip commit’leyin.
+---
 
-## İçerik
+## İçerik ve Bölümler
 
-- Hakkımda
-- Öne Çıkanlar (sayaçlar)
-- **Araç Kutum** (kategorili teknoloji kartları)
-- **Yol Haritası** (Kanban: Şimdi / Sırada / Sonra)
-- Projeler
-- Galeri & Video (YouTube gömülü)
-- İletişim
+- **Hakkımda** — kısa özet ve etiketler
+- **Öne Çıkanlar** — sayaç kartları
+- **Araç Kutum** — kategorili teknoloji kartları
+- **Yol Haritası** — (Şimdi / Sırada / Sonra) planı
+- **Projeler** — açıklama + GitHub linkleri
+- **Galeri & Video** — YouTube video sayfaya gömülü
+- **İletişim** — e-posta ve sosyal linkler (GitHub & LinkedIn)
+
+---
+
+## Teknik Yığın
+
+- **Next.js 15 (app router)**
+- **React 19**
+- **Tailwind CSS v4** (config gerektirmeyen utility sınıflar)
+- **Vercel** (CI/CD & hosting)
+
+---
 
 ## Çalıştırma
 
 ```bash
+# 1) Bağımlılıkları kur
 npm i
+
+# 2) Geliştirme
 npm run dev
-# prod
+
+# 3) Prod (lokal test)
 npm run build && npm start
