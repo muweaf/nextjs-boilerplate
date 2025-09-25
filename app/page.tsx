@@ -1,33 +1,27 @@
 // @ts-nocheck
 "use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { site } from "./site-data";
 
-/* Basit reveal animasyonu (yalnızca IntersectionObserver) */
+/* Basit reveal animasyonu */
 function Reveal({ children, delay = 0 }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        setVisible(true);
+        io.disconnect();
+      }
+    }, { threshold: 0.2 });
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, []);
-
   return (
     <div
       ref={ref}
-      className={`transform transition-all duration-700 ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-      }`}
+      className={`transform transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
@@ -35,15 +29,14 @@ function Reveal({ children, delay = 0 }) {
   );
 }
 
-/* Sayaç animasyonu */
+/* Sayaç */
 function Counter({ to = 0, suffix = "", duration = 1200 }) {
   const [val, setVal] = useState(0);
   const started = useRef(false);
   const ref = useRef(null);
-
   useEffect(() => {
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !started.current) {
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
         started.current = true;
         const start = performance.now();
         const tick = (t) => {
@@ -57,11 +50,9 @@ function Counter({ to = 0, suffix = "", duration = 1200 }) {
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, [to, duration]);
-
   return (
     <span ref={ref} className="tabular-nums">
-      {val}
-      {suffix}
+      {val}{suffix}
     </span>
   );
 }
@@ -70,7 +61,7 @@ export default function Home() {
   const year = new Date().getFullYear();
   const yt = `https://www.youtube.com/embed/${site.videoId}`;
 
-  /* Tema toggle */
+  /* Tema */
   const [theme, setTheme] = useState(() =>
     typeof window === "undefined"
       ? "light"
@@ -90,49 +81,42 @@ export default function Home() {
     }
   };
 
-  /* Aktif menü highlight */
-  const sectionIds = ["hakkimda", "one-cikanlar", "yet", "projeler", "timeline", "galeri", "iletisim"];
+  /* NAV active */
+  const sectionIds = ["hakkimda", "one-cikanlar", "kutu", "projeler", "yol", "galeri", "iletisim"];
   const [active, setActive] = useState(sectionIds[0]);
   useEffect(() => {
     const observers = [];
     sectionIds.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-      const io = new IntersectionObserver(
-        ([entry]) => entry.isIntersecting && setActive(id),
-        { threshold: 0.6 }
-      );
+      const io = new IntersectionObserver(([e]) => e.isIntersecting && setActive(id), { threshold: 0.6 });
       io.observe(el);
       observers.push(io);
     });
     return () => observers.forEach((o) => o.disconnect());
   }, []);
 
-  /* Kısayol sınıflar */
-  const card =
-    "rounded-2xl border border-slate-200/60 bg-white/70 shadow-lg shadow-slate-200/60 backdrop-blur transition hover:shadow-xl hover:-translate-y-0.5 dark:border-slate-700/60 dark:bg-slate-900/60 dark:shadow-black/30";
-  const chip =
-    "inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800";
-  const btn = "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition";
-  const btnPrimary = `${btn} bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-white shadow-md hover:opacity-95`;
-  const btnOutline = `${btn} bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-800`;
-  const navClass = (id) =>
-    `${chip} ${active === id ? "ring-2 ring-indigo-500/40 text-indigo-600 dark:text-indigo-400" : ""}`;
+  /* Kısayollar */
+  const card   = "rounded-2xl border border-slate-200/60 bg-white/70 shadow-lg shadow-slate-200/60 backdrop-blur transition hover:shadow-xl hover:-translate-y-0.5 dark:border-slate-700/60 dark:bg-slate-900/60 dark:shadow-black/30";
+  const chip   = "inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800";
+  const btn    = "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition";
+  const btnPri = `${btn} bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-white shadow-md hover:opacity-95`;
+  const btnOut = `${btn} bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-800`;
+  const navCls = (id) => `${chip} ${active === id ? "ring-2 ring-indigo-500/40 text-indigo-600 dark:text-indigo-400" : ""}`;
 
-  /* Yetenek ve timeline verileri (örnek) */
-  const skills = [
-    { name: "React / Next.js", level: 90 },
-    { name: "Spring Boot", level: 75 },
-    { name: "Node.js", level: 80 },
-    { name: "PostgreSQL", level: 70 },
-    { name: "Tailwind CSS", level: 85 },
-    { name: "Python (Data)", level: 65 },
+  /* Yeni bölümler için veriler */
+  const toolGroups = [
+    { title: "Frontend",  items: ["Next.js", "React", "Tailwind CSS", "Vite"] },
+    { title: "Backend",   items: ["Spring Boot", "Node.js", "Express"] },
+    { title: "Veritabanı", items: ["PostgreSQL", "MongoDB"] },
+    { title: "Araçlar",   items: ["Git", "Vercel", "Postman", "Figma"] },
   ];
-  const timeline = [
-    { title: "3. Sınıf • Bilgisayar Müh.", desc: "Algoritmalar, ağ, veritabanı projeleri.", when: "2024–2025" },
-    { title: "Staj • Web Geliştirme", desc: "React + REST API, admin paneli.", when: "2024 Yaz" },
-    { title: "Freelance • Landing Page", desc: "Figma → Next.js + Tailwind canlı.", when: "2023" },
-  ];
+
+  const roadmap = {
+    now:   ["Portfolyoya blog ve arama", "JWT ile auth demo", "Unit test örnekleri"],
+    next:  ["Docker ve konteyner mantığı", "CI/CD pipeline örneği", "Spring Security"],
+    later: ["Mobil (React Native)", "GraphQL", "AWS temelleri"],
+  };
 
   return (
     <>
@@ -143,38 +127,28 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 flex h-14 items-center justify-between">
           <strong className="text-base">Murat Musa Dimlit</strong>
           <div className="flex items-center gap-2 text-sm">
-            <a className={navClass("hakkimda")} href="#hakkimda">Hakkımda</a>
-            <a className={navClass("one-cikanlar")} href="#one-cikanlar">Öne Çıkanlar</a>
-            <a className={navClass("yet")} href="#yet">Yetenekler</a>
-            <a className={navClass("projeler")} href="#projeler">Projeler</a>
-            <a className={navClass("timeline")} href="#timeline">Zaman Çizelgesi</a>
-            <a className={navClass("galeri")} href="#galeri">Galeri</a>
-            <a className={navClass("iletisim")} href="#iletisim">İletişim</a>
+            <a className={navCls("hakkimda")} href="#hakkimda">Hakkımda</a>
+            <a className={navCls("one-cikanlar")} href="#one-cikanlar">Öne Çıkanlar</a>
+            <a className={navCls("kutu")} href="#kutu">Araç Kutum</a>
+            <a className={navCls("projeler")} href="#projeler">Projeler</a>
+            <a className={navCls("yol")} href="#yol">Yol Haritası</a>
+            <a className={navCls("galeri")} href="#galeri">Galeri</a>
+            <a className={navCls("iletisim")} href="#iletisim">İletişim</a>
 
-            {/* Tema Toggle */}
+            {/* Tema */}
             <button
               onClick={toggleTheme}
-              aria-label="Tema Değiştir"
+              aria-label="Tema"
               className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800"
-              title="Tema"
             >
               {theme === "dark" ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-amber-400">
-                  <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45 14.32l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 4V1h0v3zm0 19v-3h0v3zM21 12h3v0h-3zM1 12h3v0H1zM17.24 4.84l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM4.24 19.76l1.42-1.42-1.8-1.79-1.41 1.41 1.79 1.8zM12 7a5 5 0 100 10 5 5 0 000-10z"/>
-                </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-amber-400"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45 14.32l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 4V1h0v3zm0 19v-3h0v3zM21 12h3v0h-3zM1 12h3v0H1zM17.24 4.84l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM4.24 19.76l1.42-1.42-1.8-1.79-1.41 1.41 1.79 1.8zM12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
               ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-slate-600 dark:fill-slate-200">
-                  <path d="M21.64 13a9 9 0 01-11.3-11A9 9 0 1021.64 13z"/>
-                </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-slate-600 dark:fill-slate-200"><path d="M21.64 13a9 9 0 01-11.3-11A9 9 0 1021.64 13z"/></svg>
               )}
             </button>
-
-            {/* CV indir */}
-            <a
-              href="/MuratMusaDimlit-CV.pdf"
-              download
-              className="ml-1 hidden sm:inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800"
-            >
+            {/* CV */}
+            <a href="/MuratMusaDimlit-CV.pdf" download className="ml-1 hidden sm:inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
               CV indir
             </a>
           </div>
@@ -194,8 +168,8 @@ export default function Home() {
                 </h1>
                 <p className="max-w-2xl text-slate-700 dark:text-slate-300">{site.about}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <a href="#projeler" className={btnPrimary}>Projeleri Gör</a>
-                  <a href="#iletisim" className={btnOutline}>İletişime Geç</a>
+                  <a href="#projeler" className={btnPri}>Projeleri Gör</a>
+                  <a href="#iletisim" className={btnOut}>İletişime Geç</a>
                 </div>
               </div>
             </Reveal>
@@ -203,11 +177,7 @@ export default function Home() {
             <Reveal>
               <div className="shrink-0">
                 {site.profileImage ? (
-                  <img
-                    src={site.profileImage}
-                    alt="Profil"
-                    className="h-28 w-28 rounded-2xl border object-cover shadow-md ring-2 ring-white/60 dark:ring-slate-800"
-                  />
+                  <img src={site.profileImage} alt="Profil" className="h-28 w-28 rounded-2xl border object-cover shadow-md ring-2 ring-white/60 dark:ring-slate-800" />
                 ) : (
                   <div className="grid h-28 w-28 place-items-center rounded-2xl border bg-slate-200 font-semibold shadow-md dark:bg-slate-700">
                     {site.fullName.split(" ").map(w => w[0]).slice(0,2).join("")}
@@ -239,12 +209,14 @@ export default function Home() {
 
             <Reveal delay={80}>
               <article className={`${card} p-5`}>
-                <h3 className="mb-2 text-lg font-semibold">İlgi Alanları</h3>
-                <ul className="list-disc space-y-1 pl-5 text-slate-700 dark:text-slate-300">
-                  <li>Frontend (React/Next.js)</li>
-                  <li>Backend (Spring Boot, Node.js)</li>
-                  <li>Veri Analizi (Python, Jupyter)</li>
-                </ul>
+                <h3 className="mb-2 text-lg font-semibold">Hızlı Not</h3>
+                <p className="text-sm text-slate-700 dark:text-slate-300">
+                  Şu anda portfolyoyu geliştiriyor, küçük deneysel uygulamalar ekliyorum. Aşağıda Araç Kutum ve Yol Haritamı bulabilirsin.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <a href="#kutu" className={btnOut}>Araç Kutum</a>
+                  <a href="#yol" className={btnOut}>Yol Haritası</a>
+                </div>
               </article>
             </Reveal>
           </div>
@@ -255,15 +227,9 @@ export default function Home() {
           <h2 className="mb-6 text-2xl font-semibold">Öne Çıkanlar</h2>
           <Reveal>
             <div className="grid gap-4 sm:grid-cols-3">
-              {[
-                { n: 12, t: "Mini Proje" },
-                { n: 6, t: "Teknoloji" },
-                { n: 3, t: "Takım Çalışması" },
-              ].map((x, i) => (
+              {[{ n: 12, t: "Mini Proje" }, { n: 6, t: "Teknoloji" }, { n: 3, t: "Takım Çalışması" }].map((x, i) => (
                 <div key={i} className={`${card} p-6 text-center`}>
-                  <div className="text-3xl font-extrabold">
-                    <Counter to={x.n} />+
-                  </div>
+                  <div className="text-3xl font-extrabold"><Counter to={x.n} />+</div>
                   <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">{x.t}</div>
                 </div>
               ))}
@@ -271,30 +237,40 @@ export default function Home() {
           </Reveal>
         </section>
 
-        {/* YETENEKLER */}
-        <section id="yet" className="scroll-mt-24 py-12">
-          <h2 className="mb-6 text-2xl font-semibold">Yetenekler</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {skills.map((s, i) => (
-              <Reveal delay={i * 60} key={s.name}>
-                <div className={`${card} p-5`}>
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="font-medium">{s.name}</span>
-                    <span className="text-sm text-slate-600 dark:text-slate-300">{s.level}%</span>
+        {/* ARAÇ KUTUSU (YENİ) */}
+        <section id="kutu" className="scroll-mt-24 py-12">
+          <h2 className="mb-6 text-2xl font-semibold">Araç Kutum</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {toolGroups.map((g, i) => (
+              <Reveal key={g.title} delay={i * 70}>
+                <article className={`${card} p-5`}>
+                  <div className="mb-1 text-sm text-slate-500 dark:text-slate-400">Kategori</div>
+                  <h3 className="text-lg font-semibold">{g.title}</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {g.items.map((it) => <span key={it} className={chip}>{it}</span>)}
                   </div>
-                  <div className="h-2 w-full rounded-full bg-slate-200/70 dark:bg-slate-800">
-                    <div
-                      className="h-2 rounded-full bg-gradient-to-r from-indigo-600 to-fuchsia-500"
-                      style={{ width: `${s.level}%` }}
-                    />
-                  </div>
-                </div>
+                </article>
               </Reveal>
             ))}
           </div>
+
+          {/* Favori stack kod etiketi */}
+          <Reveal delay={280}>
+            <div className="mt-6 overflow-hidden rounded-2xl border bg-slate-50 p-4 text-xs dark:border-slate-700 dark:bg-slate-900">
+              <div className="mb-2 font-semibold text-slate-700 dark:text-slate-200">Favori Kombinasyon</div>
+              <pre className="overflow-auto"><code>
+{`# Frontend
+Next.js + Tailwind CSS
+# Backend
+Spring Boot / Node.js (Express)
+# Deploy
+Vercel (frontend) • Render/railway (backend)`}
+              </code></pre>
+            </div>
+          </Reveal>
         </section>
 
-        {/* PROJELER */}
+        {/* PROJELER (aynı) */}
         <section id="projeler" className="scroll-mt-24 py-12">
           <h2 className="mb-4 text-2xl font-semibold">Projeler</h2>
           {site.projects?.length ? (
@@ -306,7 +282,7 @@ export default function Home() {
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{p.desc}</p>
                     <div className="mt-3">
                       {p.link ? (
-                        <a href={p.link} target="_blank" className={btnOutline}>GitHub</a>
+                        <a href={p.link} target="_blank" className={btnOut}>GitHub</a>
                       ) : (
                         <span className={chip}>Repo yakında</span>
                       )}
@@ -324,37 +300,37 @@ export default function Home() {
           )}
         </section>
 
-        {/* ZAMAN ÇİZELGESİ */}
-        <section id="timeline" className="scroll-mt-24 py-12">
-          <h2 className="mb-6 text-2xl font-semibold">Zaman Çizelgesi</h2>
-          <div className="relative ml-3">
-            <div className="absolute left-0 top-0 h-full w-px bg-slate-300 dark:bg-slate-700" />
-            <div className="space-y-6 pl-6">
-              {timeline.map((t, i) => (
-                <Reveal delay={i * 60} key={i}>
-                  <div className="relative">
-                    <div className="absolute -left-[22px] top-1.5 h-3 w-3 rounded-full bg-gradient-to-r from-indigo-600 to-fuchsia-500" />
-                    <div className={`${card} p-4`}>
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold">{t.title}</h3>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{t.when}</span>
-                      </div>
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{t.desc}</p>
-                    </div>
+        {/* YOL HARİTASI (YENİ – Kanban) */}
+        <section id="yol" className="scroll-mt-24 py-12">
+          <h2 className="mb-6 text-2xl font-semibold">Yol Haritası</h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              { title: "Şimdi",  color: "from-emerald-500 to-teal-500", items: roadmap.now },
+              { title: "Sırada", color: "from-indigo-500 to-fuchsia-500", items: roadmap.next },
+              { title: "Sonra",  color: "from-rose-500 to-orange-500", items: roadmap.later },
+            ].map((col, i) => (
+              <Reveal delay={i * 80} key={col.title}>
+                <div className={`${card} p-4`}>
+                  <div className={`mb-3 inline-flex rounded-full bg-gradient-to-r ${col.color} px-3 py-1 text-xs font-semibold text-white`}>
+                    {col.title}
                   </div>
-                </Reveal>
-              ))}
-            </div>
+                  <ul className="space-y-2 text-sm">
+                    {col.items.map((t) => (
+                      <li key={t} className="rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </section>
 
         {/* GALERİ & VİDEO */}
         <section id="galeri" className="scroll-mt-24 py-12">
           <h2 className="mb-4 text-2xl font-semibold">Galeri &amp; Video</h2>
-          <p className="mb-3 text-sm text-slate-700 dark:text-slate-300">
-            Aşağıdaki video sayfa içinde <i>gömülü</i> olarak oynar.
-          </p>
-
+          <p className="mb-3 text-sm text-slate-700 dark:text-slate-300">Aşağıdaki video sayfa içinde <i>gömülü</i> olarak oynar.</p>
           <Reveal>
             <div className="relative mb-6 aspect-video overflow-hidden rounded-2xl border shadow-lg dark:border-slate-700">
               <iframe
@@ -366,16 +342,11 @@ export default function Home() {
               />
             </div>
           </Reveal>
-
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(site.gallery ?? []).map((src, i) => (
               <Reveal delay={i * 60} key={i}>
                 <div className="group relative overflow-hidden rounded-2xl border shadow-md dark:border-slate-700">
-                  <img
-                    src={src}
-                    alt={`Galeri ${i + 1}`}
-                    className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-                  />
+                  <img src={src} alt={`Galeri ${i + 1}`} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition group-hover:opacity-100" />
                 </div>
               </Reveal>
@@ -396,65 +367,87 @@ export default function Home() {
                 adresinden ulaşabilirsin.
               </p>
               <div className="mt-3 flex gap-2">
-                {site.socials?.linkedin && (
-                  <a className={btnOutline} href={site.socials.linkedin} target="_blank">LinkedIn</a>
-                )}
-                {site.socials?.github && (
-                  <a className={btnOutline} href={site.socials.github} target="_blank">GitHub</a>
-                )}
+                {site.socials?.linkedin && <a className={btnOut} href={site.socials.linkedin} target="_blank">LinkedIn</a>}
+                {site.socials?.github   && <a className={btnOut} href={site.socials.github}   target="_blank">GitHub</a>}
               </div>
             </div>
           </Reveal>
         </section>
       </main>
 
-      {/* GELİŞMİŞ FOOTER */}
-      <footer className="mt-16 border-t bg-white/70 backdrop-blur dark:bg-slate-900/70 dark:border-slate-800">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="mx-auto h-1 w-full bg-gradient-to-r from-indigo-600 via-fuchsia-500 to-rose-500 rounded-full my-6" />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 py-6">
-            <div>
-              <h4 className="font-semibold">Hakkımda</h4>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                {site.fullName} — Web geliştirme, backend ve veri analizi ile ilgileniyorum.
+      {/* DALGA AYRAÇLI FARKLI FOOTER */}
+      <div className="relative mt-20">
+        {/* wave */}
+        <svg viewBox="0 0 1440 120" className="absolute inset-x-0 -top-12 w-full">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1">
+              <stop offset="0%"  stopColor="#6366f1"/>
+              <stop offset="50%" stopColor="#a855f7"/>
+              <stop offset="100%" stopColor="#f43f5e"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#g)" fillOpacity="0.12" d="M0,64L48,80C96,96,192,128,288,117.3C384,107,480,53,576,53.3C672,53,768,107,864,122.7C960,139,1056,117,1152,96C1248,75,1344,53,1392,42.7L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"/>
+        </svg>
+      </div>
+
+      <footer className="border-t bg-white/80 backdrop-blur dark:bg-slate-900/80 dark:border-slate-800">
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <div className="grid gap-6 md:grid-cols-5">
+            {/* Sol büyük blok: hakkında + müsaitlik rozeti */}
+            <div className="md:col-span-2">
+              <div className="mb-2 text-sm text-slate-500 dark:text-slate-400">Ben kimim?</div>
+              <h4 className="text-lg font-semibold">{site.fullName}</h4>
+              <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                Web geliştirme (Next.js), backend (Spring/Node) ve veri analizi ile ilgileniyorum.
+                Öğrenmeyi seviyorum, yeni şeyler denemekten çekinmem.
               </p>
-            </div>
-            <div>
-              <h4 className="font-semibold">Bağlantılar</h4>
-              <ul className="mt-2 space-y-1 text-sm">
-                <li><a className="hover:underline" href="#hakkimda">Hakkımda</a></li>
-                <li><a className="hover:underline" href="#projeler">Projeler</a></li>
-                <li><a className="hover:underline" href="#timeline">Zaman Çizelgesi</a></li>
-                <li><a className="hover:underline" href="#iletisim">İletişim</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold">İletişim</h4>
-              <ul className="mt-2 space-y-1 text-sm">
-                <li><a className="hover:underline" href={`mailto:${site.email}`}>{site.email}</a></li>
-                <li>Öğrenci No: {site.studentNo}</li>
-              </ul>
-              <div className="mt-3 flex gap-2">
-                {site.socials?.linkedin && <a className={chip} href={site.socials.linkedin} target="_blank">LinkedIn</a>}
-                {site.socials?.github && <a className={chip} href={site.socials.github} target="_blank">GitHub</a>}
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" /> Staj/part-time fırsatlara açığım
               </div>
             </div>
+
+            {/* Orta: chip linkler */}
             <div>
-              <h4 className="font-semibold">Bülten</h4>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Yeni projelerden haberdar ol.</p>
-              <form className="mt-3 flex gap-2" onSubmit={(e) => e.preventDefault()}>
+              <div className="mb-2 text-sm text-slate-500 dark:text-slate-400">Hızlı Kısayollar</div>
+              <div className="flex flex-wrap gap-2">
+                <a className={chip} href="#hakkimda">Hakkımda</a>
+                <a className={chip} href="#kutu">Araç Kutum</a>
+                <a className={chip} href="#yol">Yol Haritası</a>
+                <a className={chip} href="#projeler">Projeler</a>
+                <a className={chip} href="#galeri">Galeri</a>
+                <a className={chip} href="#iletisim">İletişim</a>
+              </div>
+            </div>
+
+            {/* Sağ: “kodu gör” eğlenceli blok + mail bülteni */}
+            <div className="md:col-span-2">
+              <div className="mb-2 text-sm text-slate-500 dark:text-slate-400">Kodu gör</div>
+              <div className="overflow-hidden rounded-xl border bg-slate-50 p-3 text-xs dark:border-slate-700 dark:bg-slate-900">
+                <pre className="overflow-auto"><code>
+{`# Bu portfolyo Next.js + Tailwind ile yazıldı
+git clone <repo-URL>
+cd project && npm i && npm run dev`}
+                </code></pre>
+              </div>
+
+              <form className="mt-4 flex gap-2" onSubmit={(e)=>e.preventDefault()}>
                 <input
                   type="email"
-                  placeholder="e-posta adresin"
+                  placeholder="bültene katıl (e-posta)"
                   className="flex-1 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                 />
-                <button className={btnPrimary} type="submit">Kaydol</button>
+                <button className={btnPri} type="submit">Kaydol</button>
               </form>
             </div>
           </div>
-          <div className="flex items-center justify-between border-top py-4 text-xs text-slate-600 dark:text-slate-400">
+
+          <div className="mt-6 flex flex-col items-start justify-between gap-3 border-t pt-4 text-xs text-slate-600 dark:text-slate-400 sm:flex-row">
             <span>© {year} {site.fullName} • Öğrenci No: {site.studentNo}</span>
-            <a href="#top" className="rounded-full border px-3 py-1 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Yukarı çık</a>
+            <div className="flex gap-2">
+              {site.socials?.linkedin && <a className={chip} href={site.socials.linkedin} target="_blank">LinkedIn</a>}
+              {site.socials?.github   && <a className={chip} href={site.socials.github}   target="_blank">GitHub</a>}
+              <a href="#top" className="rounded-full border px-3 py-1 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Yukarı</a>
+            </div>
           </div>
         </div>
       </footer>
