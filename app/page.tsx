@@ -4,24 +4,29 @@
 import React, { useEffect, useRef, useState } from "react";
 import { site } from "./site-data";
 
-/* Basit reveal animasyonu */
+/** Görünür olduğunda yumuşak giriş animasyonu */
 function Reveal({ children, delay = 0 }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        setVisible(true);
-        io.disconnect();
-      }
-    }, { threshold: 0.2 });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, []);
   return (
     <div
       ref={ref}
-      className={`transform transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+      className={`transform transition-all duration-700 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+      }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
@@ -29,39 +34,51 @@ function Reveal({ children, delay = 0 }) {
   );
 }
 
-/* Sayaç */
+/** Basit sayaç */
 function Counter({ to = 0, suffix = "", duration = 1200 }) {
   const [val, setVal] = useState(0);
   const started = useRef(false);
   const ref = useRef(null);
   useEffect(() => {
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const start = performance.now();
-        const tick = (t) => {
-          const p = Math.min(1, (t - start) / duration);
-          setVal(Math.round(to * p));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.5 });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && !started.current) {
+          started.current = true;
+          const start = performance.now();
+          const tick = (t) => {
+            const p = Math.min(1, (t - start) / duration);
+            setVal(Math.round(to * p));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.5 }
+    );
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, [to, duration]);
   return (
     <span ref={ref} className="tabular-nums">
-      {val}{suffix}
+      {val}
+      {suffix}
     </span>
   );
 }
 
+/** Dış linkleri güvenli hale getirir (https ekler) */
+const abs = (u?: string) => {
+  if (!u) return undefined;
+  if (/^(https?:)?\/\//i.test(u)) return u;
+  if (u.startsWith("mailto:")) return u;
+  return `https://${u.replace(/^\/+/, "")}`;
+};
+
 export default function Home() {
   const year = new Date().getFullYear();
-  const yt = `https://www.youtube.com/embed/${site.videoId}`;
+  const yt = `https://www.youtube.com/embed/${site?.videoId ?? ""}`;
 
-  /* Tema */
+  /** Tema */
   const [theme, setTheme] = useState(() =>
     typeof window === "undefined"
       ? "light"
@@ -81,25 +98,36 @@ export default function Home() {
     }
   };
 
-  /* NAV active */
-  const sectionIds = ["hakkimda", "one-cikanlar", "kutu", "projeler", "yol", "galeri", "iletisim"];
+  /** Nav aktif takibi */
+  const sectionIds = [
+    "hakkimda",
+    "one-cikanlar",
+    "kutu",
+    "projeler",
+    "yol",
+    "galeri",
+    "iletisim",
+  ];
   const [active, setActive] = useState(sectionIds[0]);
   useEffect(() => {
-    const observers = [];
+    const observers: IntersectionObserver[] = [];
     sectionIds.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-      const io = new IntersectionObserver(([e]) => e.isIntersecting && setActive(id), { threshold: 0.6 });
+      const io = new IntersectionObserver(
+        ([e]) => e.isIntersecting && setActive(id),
+        { threshold: 0.6 }
+      );
       io.observe(el);
       observers.push(io);
     });
     return () => observers.forEach((o) => o.disconnect());
   }, []);
 
-  /* Kısayol stilleri */
+  /** Sık kullanılan sınıflar */
   const cardBase =
-    "rounded-2xl border bg-white/80 backdrop-blur transition-all duration-300 will-change-transform " +
-    "shadow-lg dark:bg-slate-900/70 dark:border-slate-700/60 dark:shadow-black/30";
+    "rounded-2xl border bg-white/80 backdrop-blur transition-all duration-300 will-change-transform shadow-lg " +
+    "dark:bg-slate-900/70 dark:border-slate-700/60 dark:shadow-black/30";
   const cardHover =
     "hover:-translate-y-1 hover:scale-[1.01] hover:shadow-2xl hover:shadow-emerald-300/40 dark:hover:shadow-emerald-900/40";
   const card = `${cardBase} border-slate-200/70 ${cardHover}`;
@@ -112,20 +140,24 @@ export default function Home() {
   const btnPri = `${btn} bg-gradient-to-r from-emerald-600 to-lime-500 text-white shadow-md hover:opacity-95`;
   const btnOut = `${btn} bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-800`;
 
-  const navCls = (id) =>
-    `${chip} ${active === id ? "ring-2 ring-emerald-500/40 text-emerald-700 dark:text-emerald-300" : ""}`;
+  const navCls = (id: string) =>
+    `${chip} ${
+      active === id
+        ? "ring-2 ring-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+        : ""
+    }`;
 
-  /* Yeni bölümler için veriler */
+  /** İçerik verileri (Yeni bölümler) */
   const toolGroups = [
-    { title: "Frontend",  items: ["Next.js", "React", "Tailwind CSS", "Vite"] },
-    { title: "Backend",   items: ["Spring Boot", "Node.js", "Express"] },
+    { title: "Frontend", items: ["Next.js", "React", "Tailwind CSS", "Vite"] },
+    { title: "Backend", items: ["Spring Boot", "Node.js", "Express"] },
     { title: "Veritabanı", items: ["PostgreSQL", "MongoDB"] },
-    { title: "Araçlar",   items: ["Git", "Vercel", "Postman", "Figma"] },
+    { title: "Araçlar", items: ["Git", "Vercel", "Postman", "Figma"] },
   ];
 
   const roadmap = {
-    now:   ["Portfolyoya blog ve arama", "JWT ile auth demo", "Unit test örnekleri"],
-    next:  ["Docker ve konteyner mantığı", "CI/CD pipeline örneği", "Spring Security"],
+    now: ["Portfolyoya blog ve arama", "JWT ile auth demo", "Unit test örnekleri"],
+    next: ["Docker ve konteyner mantığı", "CI/CD pipeline örneği", "Spring Security"],
     later: ["Mobil (React Native)", "GraphQL", "AWS temelleri"],
   };
 
@@ -136,7 +168,9 @@ export default function Home() {
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 border-b border-emerald-100/70 bg-emerald-50/70 backdrop-blur dark:bg-slate-900/80 dark:border-slate-800">
         <div className="mx-auto max-w-6xl px-4 flex h-14 items-center justify-between">
-          <strong className="text-base text-emerald-700 dark:text-emerald-300">Murat Musa Dimlit</strong>
+          <strong className="text-base text-emerald-700 dark:text-emerald-300">
+            {site?.fullName ?? "Murat Musa Dimlit"}
+          </strong>
           <div className="flex items-center gap-2 text-sm">
             <a className={navCls("hakkimda")} href="#hakkimda">Hakkımda</a>
             <a className={navCls("one-cikanlar")} href="#one-cikanlar">Öne Çıkanlar</a>
@@ -154,20 +188,26 @@ export default function Home() {
               title="Tema"
             >
               {theme === "dark" ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-amber-400"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45 14.32l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 4V1h0v3zm0 19v-3h0v3zM21 12h3v0h-3zM1 12h3v0H1zM17.24 4.84l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM4.24 19.76l1.42-1.42-1.8-1.79-1.41 1.41 1.79 1.8zM12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-amber-400">
+                  <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45 14.32l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 4V1h0v3zm0 19v-3h0v3zM21 12h3v0h-3zM1 12h3v0H1zM17.24 4.84l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM4.24 19.76l1.42-1.42-1.8-1.79-1.41 1.41 1.79 1.8zM12 7a5 5 0 100 10 5 5 0 000-10z"/>
+                </svg>
               ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-slate-600 dark:fill-slate-200"><path d="M21.64 13a9 9 0 01-11.3-11A9 9 0 1021.64 13z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" className="fill-slate-600 dark:fill-slate-200">
+                  <path d="M21.64 13a9 9 0 01-11.3-11A9 9 0 1021.64 13z"/>
+                </svg>
               )}
             </button>
 
-            {/* CV */}
-            <a
-              href="/MuratMusaDimlit-CV.pdf"
-              download
-              className="ml-1 hidden sm:inline-flex rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-800"
-            >
-              CV indir
-            </a>
+            {/* (Varsa) CV */}
+            {site?.cvUrl && (
+              <a
+                href={site.cvUrl}
+                download
+                className="ml-1 hidden sm:inline-flex rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-800"
+              >
+                CV indir
+              </a>
+            )}
           </div>
         </div>
       </nav>
@@ -180,10 +220,12 @@ export default function Home() {
               <div className="grow">
                 <h1 className="mb-3 text-4xl sm:text-5xl font-extrabold tracking-tight">
                   <span className="bg-gradient-to-r from-emerald-600 via-lime-500 to-teal-500 bg-clip-text text-transparent">
-                    Merhaba, ben {site.fullName}
+                    Merhaba, ben {site?.fullName ?? "Murat Musa Dimlit"}
                   </span>
                 </h1>
-                <p className="max-w-2xl text-slate-800 dark:text-slate-300">{site.about}</p>
+                <p className="max-w-2xl text-slate-800 dark:text-slate-300">
+                  {site?.about ?? ""}
+                </p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <a href="#projeler" className={btnPri}>Projeleri Gör</a>
                   <a href="#iletisim" className={btnOut}>İletişime Geç</a>
@@ -191,9 +233,10 @@ export default function Home() {
               </div>
             </Reveal>
 
+            {/* Profil: fullName boş olsa bile güvenli fallback (MM) */}
             <Reveal>
               <div className="shrink-0">
-                {site.profileImage ? (
+                {site?.profileImage ? (
                   <img
                     src={site.profileImage}
                     alt="Profil"
@@ -201,7 +244,13 @@ export default function Home() {
                   />
                 ) : (
                   <div className="grid h-28 w-28 place-items-center rounded-2xl border bg-emerald-200 font-semibold shadow-md dark:bg-slate-700">
-                    {site.fullName.split(" ").map(w => w[0]).slice(0,2).join("")}
+                    {(() => {
+                      const name = (site?.fullName ?? "").trim();
+                      const letters = name
+                        ? name.split(/\s+/).map((p) => (p && p[0]) || "").join("")
+                        : "MM";
+                      return (letters || "MM").slice(0, 2).toUpperCase();
+                    })()}
                   </div>
                 )}
               </div>
@@ -218,7 +267,9 @@ export default function Home() {
             <Reveal>
               <article className={`${card} p-5`}>
                 <h3 className="mb-2 text-lg font-semibold text-emerald-700 dark:text-emerald-300">Kısa Öz</h3>
-                <p className="leading-7 text-slate-800 dark:text-slate-300">{site.about}</p>
+                <p className="leading-7 text-slate-800 dark:text-slate-300">
+                  {site?.about ?? ""}
+                </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className={chip}>React/Next.js</span>
                   <span className={chip}>Spring Boot</span>
@@ -232,7 +283,7 @@ export default function Home() {
               <article className={`${card} p-5`}>
                 <h3 className="mb-2 text-lg font-semibold text-emerald-700 dark:text-emerald-300">Hızlı Not</h3>
                 <p className="text-sm text-slate-800 dark:text-slate-300">
-                  Şu anda portfolyoyu geliştiriyorum. Aşağıda Araç Kutum ve Yol Haritası bölümlerini bulabilirsin.
+                  Aşağıda Araç Kutum ve Yol Haritası bölümlerini bulabilirsin.
                 </p>
                 <div className="mt-3 flex gap-2">
                   <a href="#kutu" className={btnOut}>Araç Kutum</a>
@@ -250,7 +301,9 @@ export default function Home() {
             <div className="grid gap-4 sm:grid-cols-3">
               {[{ n: 12, t: "Mini Proje" }, { n: 6, t: "Teknoloji" }, { n: 3, t: "Takım Çalışması" }].map((x, i) => (
                 <div key={i} className={`${card} p-6 text-center`}>
-                  <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300"><Counter to={x.n} />+</div>
+                  <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
+                    <Counter to={x.n} />+
+                  </div>
                   <div className="mt-1 text-sm text-slate-700 dark:text-slate-300">{x.t}</div>
                 </div>
               ))}
@@ -268,25 +321,26 @@ export default function Home() {
                   <div className="mb-1 text-sm text-slate-500 dark:text-slate-400">Kategori</div>
                   <h3 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">{g.title}</h3>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {g.items.map((it) => <span key={it} className={chip}>{it}</span>)}
+                    {g.items.map((it) => (
+                      <span key={it} className={chip}>{it}</span>
+                    ))}
                   </div>
                 </article>
               </Reveal>
             ))}
           </div>
 
-          {/* Favori stack etiketi */}
           <Reveal delay={280}>
             <div className="mt-6 overflow-hidden rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-xs dark:border-slate-700 dark:bg-slate-900">
               <div className="mb-2 font-semibold text-emerald-700 dark:text-emerald-300">Favori Kombinasyon</div>
-              <pre className="overflow-auto"><code>
-{`# Frontend
+              <pre className="overflow-auto">
+                <code>{`# Frontend
 Next.js + Tailwind CSS
 # Backend
 Spring Boot / Node.js (Express)
 # Deploy
-Vercel (frontend) • Render/Railway (backend)`}
-              </code></pre>
+Vercel (frontend) • Render/Railway (backend)`}</code>
+              </pre>
             </div>
           </Reveal>
         </section>
@@ -294,7 +348,7 @@ Vercel (frontend) • Render/Railway (backend)`}
         {/* PROJELER */}
         <section id="projeler" className="scroll-mt-24 py-12">
           <h2 className="mb-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">Projeler</h2>
-          {site.projects?.length ? (
+          {site?.projects?.length ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {site.projects.map((p, i) => (
                 <Reveal delay={i * 60} key={i}>
@@ -303,7 +357,9 @@ Vercel (frontend) • Render/Railway (backend)`}
                     <p className="mt-1 text-sm text-slate-800 dark:text-slate-300">{p.desc}</p>
                     <div className="mt-3">
                       {p.link ? (
-                        <a href={p.link} target="_blank" className={btnOut}>GitHub</a>
+                        <a href={abs(p.link)} target="_blank" rel="noreferrer" className={btnOut}>
+                          GitHub
+                        </a>
                       ) : (
                         <span className={chip}>Repo yakında</span>
                       )}
@@ -326,9 +382,9 @@ Vercel (frontend) • Render/Railway (backend)`}
           <h2 className="mb-6 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">Yol Haritası</h2>
           <div className="grid gap-6 md:grid-cols-3">
             {[
-              { title: "Şimdi",  color: "from-emerald-500 to-teal-500", items: roadmap.now },
+              { title: "Şimdi", color: "from-emerald-500 to-teal-500", items: roadmap.now },
               { title: "Sırada", color: "from-lime-500 to-emerald-500", items: roadmap.next },
-              { title: "Sonra",  color: "from-teal-500 to-emerald-600", items: roadmap.later },
+              { title: "Sonra", color: "from-teal-500 to-emerald-600", items: roadmap.later },
             ].map((col, i) => (
               <Reveal delay={i * 80} key={col.title}>
                 <div className={`${card} p-4`}>
@@ -368,7 +424,7 @@ Vercel (frontend) • Render/Railway (backend)`}
           </Reveal>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(site.gallery ?? []).map((src, i) => (
+            {(site?.gallery ?? []).map((src, i) => (
               <Reveal delay={i * 60} key={i}>
                 <div className="group relative overflow-hidden rounded-2xl border shadow-md dark:border-slate-700">
                   <img
@@ -386,21 +442,29 @@ Vercel (frontend) • Render/Railway (backend)`}
         {/* İLETİŞİM */}
         <section id="iletisim" className="scroll-mt-24 py-12">
           <h2 className="mb-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">İletişim</h2>
-        <Reveal>
-          <div className={`${card} p-5`}>
-            <p className="text-sm text-slate-800 dark:text-slate-300">
-              Bana{" "}
-              <a className="underline decoration-emerald-600 underline-offset-4" href={`mailto:${site.email}`}>
-                {site.email}
-              </a>{" "}
-              adresinden ulaşabilirsin.
-            </p>
-            <div className="mt-3 flex gap-2">
-              {site.socials?.linkedin && <a className={btnOut} href={site.socials.linkedin} target="_blank">LinkedIn</a>}
-              {site.socials?.github   && <a className={btnOut} href={site.socials.github}   target="_blank">GitHub</a>}
+          <Reveal>
+            <div className={`${card} p-5`}>
+              <p className="text-sm text-slate-800 dark:text-slate-300">
+                Bana{" "}
+                <a className="underline decoration-emerald-600 underline-offset-4" href={abs(`mailto:${site?.email ?? ""}`)}>
+                  {site?.email ?? ""}
+                </a>{" "}
+                adresinden ulaşabilirsin.
+              </p>
+              <div className="mt-3 flex gap-2">
+                {site?.socials?.linkedin && (
+                  <a className={btnOut} href={abs(site.socials.linkedin)} target="_blank" rel="noreferrer">
+                    LinkedIn
+                  </a>
+                )}
+                {site?.socials?.github && (
+                  <a className={btnOut} href={abs(site.socials.github)} target="_blank" rel="noreferrer">
+                    GitHub
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
         </section>
       </main>
 
@@ -409,12 +473,16 @@ Vercel (frontend) • Render/Railway (backend)`}
         <svg viewBox="0 0 1440 120" className="absolute inset-x-0 -top-12 w-full">
           <defs>
             <linearGradient id="g" x1="0" x2="1">
-              <stop offset="0%"  stopColor="#10b981"/>
-              <stop offset="50%" stopColor="#22c55e"/>
-              <stop offset="100%" stopColor="#14b8a6"/>
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="50%" stopColor="#22c55e" />
+              <stop offset="100%" stopColor="#14b8a6" />
             </linearGradient>
           </defs>
-          <path fill="url(#g)" fillOpacity="0.12" d="M0,64L48,80C96,96,192,128,288,117.3C384,107,480,53,576,53.3C672,53,768,107,864,122.7C960,139,1056,117,1152,96C1248,75,1344,53,1392,42.7L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"/>
+          <path
+            fill="url(#g)"
+            fillOpacity="0.12"
+            d="M0,64L48,80C96,96,192,128,288,117.3C384,107,480,53,576,53.3C672,53,768,107,864,122.7C960,139,1056,117,1152,96C1248,75,1344,53,1392,42.7L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          />
         </svg>
       </div>
 
@@ -423,7 +491,9 @@ Vercel (frontend) • Render/Railway (backend)`}
           <div className="grid gap-6 md:grid-cols-4">
             <div className="md:col-span-2">
               <div className="mb-2 text-sm text-emerald-700/80 dark:text-emerald-300/80">Ben kimim?</div>
-              <h4 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">{site.fullName}</h4>
+              <h4 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
+                {site?.fullName ?? "Murat Musa Dimlit"}
+              </h4>
               <p className="mt-2 text-sm text-slate-800 dark:text-slate-300">
                 Web geliştirme (Next.js), backend (Spring/Node) ve veri analizi ile ilgileniyorum.
               </p>
@@ -447,21 +517,33 @@ Vercel (frontend) • Render/Railway (backend)`}
             <div>
               <div className="mb-2 text-sm text-emerald-700/80 dark:text-emerald-300/80">Kodu gör</div>
               <div className="overflow-hidden rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-xs dark:border-slate-700 dark:bg-slate-900">
-                <pre className="overflow-auto"><code>
-{`# Bu portfolyo Next.js + Tailwind ile yazıldı
+                <pre className="overflow-auto">
+                  <code>{`# Bu portfolyo Next.js + Tailwind ile yazıldı
 git clone <repo-URL>
-cd project && npm i && npm run dev`}
-                </code></pre>
+cd project && npm i && npm run dev`}</code>
+                </pre>
               </div>
             </div>
           </div>
 
           <div className="mt-6 flex flex-col items-start justify-between gap-3 border-t pt-4 text-xs text-slate-700 dark:text-slate-400 sm:flex-row">
-            <span>© {year} {site.fullName} • Öğrenci No: {site.studentNo}</span>
+            <span>
+              © {year} {site?.fullName ?? "Murat Musa Dimlit"} • Öğrenci No: {site?.studentNo ?? "—"}
+            </span>
             <div className="flex gap-2">
-              {site.socials?.linkedin && <a className={chip} href={site.socials.linkedin} target="_blank">LinkedIn</a>}
-              {site.socials?.github   && <a className={chip} href={site.socials.github}   target="_blank">GitHub</a>}
-              <a href="#top" className="rounded-full border px-3 py-1 hover:bg-emerald-100 dark:border-slate-700 dark:hover:bg-slate-800">Yukarı</a>
+              {site?.socials?.linkedin && (
+                <a className={chip} href={abs(site.socials.linkedin)} target="_blank" rel="noreferrer">
+                  LinkedIn
+                </a>
+              )}
+              {site?.socials?.github && (
+                <a className={chip} href={abs(site.socials.github)} target="_blank" rel="noreferrer">
+                  GitHub
+                </a>
+              )}
+              <a href="#top" className="rounded-full border px-3 py-1 hover:bg-emerald-100 dark:border-slate-700 dark:hover:bg-slate-800">
+                Yukarı
+              </a>
             </div>
           </div>
         </div>
