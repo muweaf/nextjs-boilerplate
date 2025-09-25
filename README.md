@@ -5,7 +5,8 @@ Vercel üzerinde otomatik olarak deploy edilmektedir.
 
 ## Canlı Domain
 
-- **Site adresi:** [https://YOUR-PROJECT.vercel.app](https://YOUR-PROJECT.vercel.app)
+**Site adresi:** [https://nextjs-boilerplate-muweaf.vercel.app](https://nextjs-boilerplate-muweaf.vercel.app)
+
 
 > Not: `YOUR-PROJECT` kısmını kendi Vercel dağıtım alan adınla değiştirip commit’leyin.
 
