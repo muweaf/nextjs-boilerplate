@@ -7,9 +7,7 @@ Vercel üzerinde otomatik olarak deploy edilmektedir.
 
 ## Canlı Domain
 
-**Site adresi:**  
-[https://nextjs-boilerplate-70xotjhx5-murats-projects-dd84103f.vercel.app](https://nextjs-boilerplate-70xotjhx5-murats-projects-dd84103f.vercel.app)
-
+**Site adresi:** https://nextjs-boilerplate-git-main-murats-projects-dd84103f.vercel.app/
 > Not: Bu bağlantı Vercel’deki **production** dağıtım alan adıdır.
 
 ---
