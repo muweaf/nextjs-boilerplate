@@ -6,7 +6,7 @@ import { site } from "./site-data";
 
 /** Görünür olduğunda yumuşak giriş animasyonu */
 function Reveal({ children, delay = 0 }) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const io = new IntersectionObserver(
@@ -38,14 +38,14 @@ function Reveal({ children, delay = 0 }) {
 function Counter({ to = 0, suffix = "", duration = 1200 }) {
   const [val, setVal] = useState(0);
   const started = useRef(false);
-  const ref = useRef(null);
+  const ref = useRef<HTMLSpanElement | null>(null);
   useEffect(() => {
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting && !started.current) {
           started.current = true;
           const start = performance.now();
-          const tick = (t) => {
+          const tick = (t: number) => {
             const p = Math.min(1, (t - start) / duration);
             setVal(Math.round(to * p));
             if (p < 1) requestAnimationFrame(tick);
@@ -74,6 +74,36 @@ const abs = (u?: string) => {
   return `https://${u.replace(/^\/+/, "")}`;
 };
 
+/** Portre/Yatay algılayıp orana ve odak noktasına göre düzgün gösteren thumbnail */
+function Thumb({ src, alt, delay = 0 }: { src: string; alt: string; delay?: number }) {
+  const [isPortrait, setIsPortrait] = React.useState<boolean | null>(null);
+
+  return (
+    <Reveal delay={delay}>
+      <figure className="group overflow-hidden rounded-2xl border border-emerald-100 bg-white/40 shadow-lg transition-all dark:border-slate-700">
+        <div
+          className="w-full"
+          style={{ aspectRatio: isPortrait === null ? "4 / 3" : isPortrait ? "3 / 4" : "4 / 3" }}
+        >
+          <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            onLoad={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              setIsPortrait(img.naturalHeight > img.naturalWidth);
+            }}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            // Portre ise yüzü biraz daha üste taşı
+            style={isPortrait ? ({ objectPosition: "50% 18%" } as React.CSSProperties) : undefined}
+          />
+        </div>
+      </figure>
+    </Reveal>
+  );
+}
+
 export default function Home() {
   const year = new Date().getFullYear();
   const yt = `https://www.youtube.com/embed/${site?.videoId ?? ""}`;
@@ -99,25 +129,16 @@ export default function Home() {
   };
 
   /** Nav aktif takibi */
-  const sectionIds = [
-    "hakkimda",
-    "one-cikanlar",
-    "kutu",
-    "projeler",
-    "yol",
-    "galeri",
-    "iletisim",
-  ];
+  const sectionIds = ["hakkimda", "one-cikanlar", "kutu", "projeler", "yol", "galeri", "iletisim"];
   const [active, setActive] = useState(sectionIds[0]);
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     sectionIds.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-      const io = new IntersectionObserver(
-        ([e]) => e.isIntersecting && setActive(id),
-        { threshold: 0.6 }
-      );
+      const io = new IntersectionObserver(([e]) => e.isIntersecting && setActive(id), {
+        threshold: 0.6,
+      });
       io.observe(el);
       observers.push(io);
     });
@@ -142,24 +163,27 @@ export default function Home() {
 
   const navCls = (id: string) =>
     `${chip} ${
-      active === id
-        ? "ring-2 ring-emerald-500/40 text-emerald-700 dark:text-emerald-300"
-        : ""
+      active === id ? "ring-2 ring-emerald-500/40 text-emerald-700 dark:text-emerald-300" : ""
     }`;
 
-  /** İçerik verileri (Yeni bölümler) */
+  /** İçerik verileri */
   const toolGroups = [
     { title: "Frontend", items: ["Next.js", "React", "Tailwind CSS", "Vite"] },
     { title: "Backend", items: ["Spring Boot", "Node.js", "Express"] },
     { title: "Veritabanı", items: ["PostgreSQL", "MongoDB"] },
     { title: "Araçlar", items: ["Git", "Vercel", "Postman", "Figma"] },
   ];
-
   const roadmap = {
     now: ["Portfolyoya blog ve arama", "JWT ile auth demo", "Unit test örnekleri"],
     next: ["Docker ve konteyner mantığı", "CI/CD pipeline örneği", "Spring Security"],
     later: ["Mobil (React Native)", "GraphQL", "AWS temelleri"],
   };
+
+  // Galeri kaynakları: site.gallery yoksa public/gallery fallback
+  const gallery =
+    site?.gallery?.length
+      ? site.gallery
+      : ["/gallery/gym-1.jpeg", "/gallery/gym-2.jpeg", "/gallery/gym-3.jpeg"];
 
   return (
     <div className="bg-emerald-50/60 dark:bg-slate-950 min-h-screen">
@@ -172,13 +196,27 @@ export default function Home() {
             {site?.fullName ?? "Murat Musa Dimlit"}
           </strong>
           <div className="flex items-center gap-2 text-sm">
-            <a className={navCls("hakkimda")} href="#hakkimda">Hakkımda</a>
-            <a className={navCls("one-cikanlar")} href="#one-cikanlar">Öne Çıkanlar</a>
-            <a className={navCls("kutu")} href="#kutu">Araç Kutum</a>
-            <a className={navCls("projeler")} href="#projeler">Projeler</a>
-            <a className={navCls("yol")} href="#yol">Yol Haritası</a>
-            <a className={navCls("galeri")} href="#galeri">Galeri</a>
-            <a className={navCls("iletisim")} href="#iletisim">İletişim</a>
+            <a className={navCls("hakkimda")} href="#hakkimda">
+              Hakkımda
+            </a>
+            <a className={navCls("one-cikanlar")} href="#one-cikanlar">
+              Öne Çıkanlar
+            </a>
+            <a className={navCls("kutu")} href="#kutu">
+              Araç Kutum
+            </a>
+            <a className={navCls("projeler")} href="#projeler">
+              Projeler
+            </a>
+            <a className={navCls("yol")} href="#yol">
+              Yol Haritası
+            </a>
+            <a className={navCls("galeri")} href="#galeri">
+              Galeri
+            </a>
+            <a className={navCls("iletisim")} href="#iletisim">
+              İletişim
+            </a>
 
             {/* Tema */}
             <button
@@ -189,16 +227,15 @@ export default function Home() {
             >
               {theme === "dark" ? (
                 <svg width="16" height="16" viewBox="0 0 24 24" className="fill-amber-400">
-                  <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45 14.32l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 4V1h0v3zm0 19v-3h0v3zM21 12h3v0h-3zM1 12h3v0H1zM17.24 4.84l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM4.24 19.76l1.42-1.42-1.8-1.79-1.41 1.41 1.79 1.8zM12 7a5 5 0 100 10 5 5 0 000-10z"/>
+                  <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45 14.32l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 4V1h0v3zm0 19v-3h0v3zM21 12h3v0h-3zM1 12h3v0H1zM17.24 4.84l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM4.24 19.76l1.42-1.42-1.8-1.79-1.41 1.41 1.79 1.8zM12 7a5 5 0 100 10 5 5 0 000-10z" />
                 </svg>
               ) : (
                 <svg width="16" height="16" viewBox="0 0 24 24" className="fill-slate-600 dark:fill-slate-200">
-                  <path d="M21.64 13a9 9 0 01-11.3-11A9 9 0 1021.64 13z"/>
+                  <path d="M21.64 13a9 9 0 01-11.3-11A9 9 0 1021.64 13z" />
                 </svg>
               )}
             </button>
 
-            {/* (Varsa) CV */}
             {site?.cvUrl && (
               <a
                 href={site.cvUrl}
@@ -223,17 +260,18 @@ export default function Home() {
                     Merhaba, ben {site?.fullName ?? "Murat Musa Dimlit"}
                   </span>
                 </h1>
-                <p className="max-w-2xl text-slate-800 dark:text-slate-300">
-                  {site?.about ?? ""}
-                </p>
+                <p className="max-w-2xl text-slate-800 dark:text-slate-300">{site?.about ?? ""}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <a href="#projeler" className={btnPri}>Projeleri Gör</a>
-                  <a href="#iletisim" className={btnOut}>İletişime Geç</a>
+                  <a href="#projeler" className={btnPri}>
+                    Projeleri Gör
+                  </a>
+                  <a href="#iletisim" className={btnOut}>
+                    İletişime Geç
+                  </a>
                 </div>
               </div>
             </Reveal>
 
-            {/* Profil: fullName boş olsa bile güvenli fallback (MM) */}
             <Reveal>
               <div className="shrink-0">
                 {site?.profileImage ? (
@@ -246,9 +284,7 @@ export default function Home() {
                   <div className="grid h-28 w-28 place-items-center rounded-2xl border bg-emerald-200 font-semibold shadow-md dark:bg-slate-700">
                     {(() => {
                       const name = (site?.fullName ?? "").trim();
-                      const letters = name
-                        ? name.split(/\s+/).map((p) => (p && p[0]) || "").join("")
-                        : "MM";
+                      const letters = name ? name.split(/\s+/).map((p) => (p && p[0]) || "").join("") : "MM";
                       return (letters || "MM").slice(0, 2).toUpperCase();
                     })()}
                   </div>
@@ -268,7 +304,8 @@ export default function Home() {
               <article className={`${card} p-5`}>
                 <h3 className="mb-2 text-lg font-semibold text-emerald-700 dark:text-emerald-300">Kısa Öz</h3>
                 <p className="leading-7 text-slate-800 dark:text-slate-300">
-                  {site?.about ?? ""}
+                  Bilgisayar mühendisliği 3. sınıf öğrencisiyim; yazılımla ilgileniyorum, özellikle nesneye yönelik
+                  dillerle. Hobilerim arasında spor yapmak ve vücut geliştirmek var.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className={chip}>React/Next.js</span>
@@ -286,8 +323,12 @@ export default function Home() {
                   Aşağıda Araç Kutum ve Yol Haritası bölümlerini bulabilirsin.
                 </p>
                 <div className="mt-3 flex gap-2">
-                  <a href="#kutu" className={btnOut}>Araç Kutum</a>
-                  <a href="#yol" className={btnOut}>Yol Haritası</a>
+                  <a href="#kutu" className={btnOut}>
+                    Araç Kutum
+                  </a>
+                  <a href="#yol" className={btnOut}>
+                    Yol Haritası
+                  </a>
                 </div>
               </article>
             </Reveal>
@@ -322,7 +363,9 @@ export default function Home() {
                   <h3 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">{g.title}</h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {g.items.map((it) => (
-                      <span key={it} className={chip}>{it}</span>
+                      <span key={it} className={chip}>
+                        {it}
+                      </span>
                     ))}
                   </div>
                 </article>
@@ -388,12 +431,17 @@ Vercel (frontend) • Render/Railway (backend)`}</code>
             ].map((col, i) => (
               <Reveal delay={i * 80} key={col.title}>
                 <div className={`${card} p-4`}>
-                  <div className={`mb-3 inline-flex rounded-full bg-gradient-to-r ${col.color} px-3 py-1 text-xs font-semibold text-white`}>
+                  <div
+                    className={`mb-3 inline-flex rounded-full bg-gradient-to-r ${col.color} px-3 py-1 text-xs font-semibold text-white`}
+                  >
                     {col.title}
                   </div>
                   <ul className="space-y-2 text-sm">
                     {col.items.map((t) => (
-                      <li key={t} className="rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+                      <li
+                        key={t}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-800"
+                      >
                         {t}
                       </li>
                     ))}
@@ -404,48 +452,32 @@ Vercel (frontend) • Render/Railway (backend)`}</code>
           </div>
         </section>
 
-       {/* GALERİ & VİDEO */}
-<section id="galeri" className="scroll-mt-24 py-12">
-  <h2 className="mb-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">
-    Galeri &amp; Video
-  </h2>
-  <p className="mb-3 text-sm text-slate-800 dark:text-slate-300">
-    Aşağıdaki video sayfa içinde <i>gömülü</i> olarak oynar.
-  </p>
+        {/* GALERİ & VİDEO */}
+        <section id="galeri" className="scroll-mt-24 py-12">
+          <h2 className="mb-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">Galeri &amp; Video</h2>
+          <p className="mb-3 text-sm text-slate-800 dark:text-slate-300">
+            Aşağıdaki video sayfa içinde <i>gömülü</i> olarak oynar.
+          </p>
 
-  <Reveal>
-    <div className="relative mb-6 aspect-video overflow-hidden rounded-2xl border shadow-lg dark:border-slate-700">
-      <iframe
-        src={yt}
-        title="Tanıtım"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-        className="absolute inset-0 h-full w-full"
-      />
-    </div>
-  </Reveal>
+          <Reveal>
+            <div className="relative mb-6 aspect-video overflow-hidden rounded-2xl border shadow-lg dark:border-slate-700">
+              <iframe
+                src={yt}
+                title="Tanıtım"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+              />
+            </div>
+          </Reveal>
 
-  {/* --- GALERİ: düzgün kırpma + sabit oran + hover --- */}
-  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    {(site?.gallery ?? []).map((src, i) => (
-      <Reveal delay={i * 60} key={i}>
-        <figure className="group overflow-hidden rounded-2xl border border-emerald-100 bg-white/40 shadow-lg transition-all dark:border-slate-700">
-          {/* Görsel için sabit 4/3 oranlı kutu */}
-          <div className="aspect-[4/3] w-full">
-            <img
-              src={src}
-              alt={`Galeri ${i + 1}`}
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
-            />
+          {/* FOTOĞRAFLAR – portre/yatay uyumlu thumbnail */}
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {gallery.map((src, i) => (
+              <Thumb key={src} src={src} alt={`Galeri ${i + 1}`} delay={i * 60} />
+            ))}
           </div>
-        </figure>
-      </Reveal>
-    ))}
-  </div>
-</section>
-
+        </section>
 
         {/* İLETİŞİM */}
         <section id="iletisim" className="scroll-mt-24 py-12">
@@ -513,12 +545,24 @@ Vercel (frontend) • Render/Railway (backend)`}</code>
             <div>
               <div className="mb-2 text-sm text-emerald-700/80 dark:text-emerald-300/80">Kısayollar</div>
               <div className="flex flex-wrap gap-2">
-                <a className={chip} href="#hakkimda">Hakkımda</a>
-                <a className={chip} href="#kutu">Araç Kutum</a>
-                <a className={chip} href="#yol">Yol Haritası</a>
-                <a className={chip} href="#projeler">Projeler</a>
-                <a className={chip} href="#galeri">Galeri</a>
-                <a className={chip} href="#iletisim">İletişim</a>
+                <a className={chip} href="#hakkimda">
+                  Hakkımda
+                </a>
+                <a className={chip} href="#kutu">
+                  Araç Kutum
+                </a>
+                <a className={chip} href="#yol">
+                  Yol Haritası
+                </a>
+                <a className={chip} href="#projeler">
+                  Projeler
+                </a>
+                <a className={chip} href="#galeri">
+                  Galeri
+                </a>
+                <a className={chip} href="#iletisim">
+                  İletişim
+                </a>
               </div>
             </div>
 
@@ -549,7 +593,10 @@ cd project && npm i && npm run dev`}</code>
                   GitHub
                 </a>
               )}
-              <a href="#top" className="rounded-full border px-3 py-1 hover:bg-emerald-100 dark:border-slate-700 dark:hover:bg-slate-800">
+              <a
+                href="#top"
+                className="rounded-full border px-3 py-1 hover:bg-emerald-100 dark:border-slate-700 dark:hover:bg-slate-800"
+              >
                 Yukarı
               </a>
             </div>
