@@ -404,40 +404,48 @@ Vercel (frontend) • Render/Railway (backend)`}</code>
           </div>
         </section>
 
-        {/* GALERİ & VİDEO */}
-        <section id="galeri" className="scroll-mt-24 py-12">
-          <h2 className="mb-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">Galeri &amp; Video</h2>
-          <p className="mb-3 text-sm text-slate-800 dark:text-slate-300">
-            Aşağıdaki video sayfa içinde <i>gömülü</i> olarak oynar.
-          </p>
+       {/* GALERİ & VİDEO */}
+<section id="galeri" className="scroll-mt-24 py-12">
+  <h2 className="mb-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">
+    Galeri &amp; Video
+  </h2>
+  <p className="mb-3 text-sm text-slate-800 dark:text-slate-300">
+    Aşağıdaki video sayfa içinde <i>gömülü</i> olarak oynar.
+  </p>
 
-          <Reveal>
-            <div className="relative mb-6 aspect-video overflow-hidden rounded-2xl border shadow-lg dark:border-slate-700">
-              <iframe
-                src={yt}
-                title="Tanıtım"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="absolute inset-0 h-full w-full"
-              />
-            </div>
-          </Reveal>
+  <Reveal>
+    <div className="relative mb-6 aspect-video overflow-hidden rounded-2xl border shadow-lg dark:border-slate-700">
+      <iframe
+        src={yt}
+        title="Tanıtım"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        className="absolute inset-0 h-full w-full"
+      />
+    </div>
+  </Reveal>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(site?.gallery ?? []).map((src, i) => (
-              <Reveal delay={i * 60} key={i}>
-                <div className="group relative overflow-hidden rounded-2xl border shadow-md dark:border-slate-700">
-                  <img
-                    src={src}
-                    alt={`Galeri ${i + 1}`}
-                    className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition group-hover:opacity-100" />
-                </div>
-              </Reveal>
-            ))}
+  {/* --- GALERİ: düzgün kırpma + sabit oran + hover --- */}
+  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {(site?.gallery ?? []).map((src, i) => (
+      <Reveal delay={i * 60} key={i}>
+        <figure className="group overflow-hidden rounded-2xl border border-emerald-100 bg-white/40 shadow-lg transition-all dark:border-slate-700">
+          {/* Görsel için sabit 4/3 oranlı kutu */}
+          <div className="aspect-[4/3] w-full">
+            <img
+              src={src}
+              alt={`Galeri ${i + 1}`}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
+            />
           </div>
-        </section>
+        </figure>
+      </Reveal>
+    ))}
+  </div>
+</section>
+
 
         {/* İLETİŞİM */}
         <section id="iletisim" className="scroll-mt-24 py-12">
